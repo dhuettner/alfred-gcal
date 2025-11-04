@@ -275,9 +275,9 @@ func (a *Account) QuickAdd(calendarID string, quick string) error {
 	return err
 }
 
-// CreateFocusTime creates a new Focus Time event in the primary calendar.
-// Focus Time events can only be created on the primary calendar.
-func (a *Account) CreateFocusTime(title string, start time.Time, duration time.Duration) error {
+// CreateOutOfOffice creates a new "Out of Office" (Außer Haus) event in the primary calendar.
+// Out of Office events can only be created on the primary calendar.
+func (a *Account) CreateOutOfOffice(title string, start time.Time, duration time.Duration) error {
 	var (
 		srv *calendar.Service
 		err error
@@ -297,19 +297,18 @@ func (a *Account) CreateFocusTime(title string, start time.Time, duration time.D
 		End: &calendar.EventDateTime{
 			DateTime: end.Format(time.RFC3339),
 		},
-		EventType: "focusTime",
-		FocusTimeProperties: &calendar.EventFocusTimeProperties{
+		EventType: "outOfOffice",
+		OutOfOfficeProperties: &calendar.EventOutOfOfficeProperties{
 			AutoDeclineMode: "declineOnlyNewConflictingInvitations",
-			DeclineMessage:  "I'm in focus time",
-			ChatStatus:      "doNotDisturb",
+			DeclineMessage:  "Ich bin außer Haus",
 		},
 	}
 
 	if _, err = srv.Events.Insert("primary", event).Do(); err != nil {
-		return errors.Wrap(err, "create focus time event error")
+		return errors.Wrap(err, "create out of office event error")
 	}
 
-	log.Printf("[account] created focus time event: %q from %v to %v", title, start, end)
+	log.Printf("[account] created out of office event: %q from %v to %v", title, start, end)
 	return nil
 }
 

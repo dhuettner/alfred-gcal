@@ -32,11 +32,11 @@ func quickAdd() error {
 }
 
 // createEvent looks for account by calendar ID and create new event in that account.
-// If the input starts with "f:" or "focus:", it creates a Focus Time event instead.
+// If the input starts with "a:" or "out:", it creates an Out of Office event instead.
 func createEvent(quick string, calendarID string) error {
-	// Check if this is a Focus Time event
-	if strings.HasPrefix(quick, "f:") || strings.HasPrefix(quick, "focus:") {
-		return createFocusTimeEvent(quick, calendarID)
+	// Check if this is an Out of Office event
+	if strings.HasPrefix(quick, "a:") || strings.HasPrefix(quick, "out:") {
+		return createOutOfOfficeEvent(quick, calendarID)
 	}
 
 	// Regular QuickAdd event
@@ -51,16 +51,16 @@ func createEvent(quick string, calendarID string) error {
 	return nil
 }
 
-// createFocusTimeEvent parses the input and creates a Focus Time event.
-// Syntax: "f: Title [duration]" or "focus: Title [duration]"
+// createOutOfOfficeEvent parses the input and creates an Out of Office (Außer Haus) event.
+// Syntax: "a: Title [duration]" or "out: Title [duration]"
 // Examples:
-//   - "f: Deep Work" -> 1h from now
-//   - "f: Deep Work 2h" -> 2h from now
-//   - "f: Deep Work 30m" -> 30 minutes from now
-func createFocusTimeEvent(input string, calendarID string) error {
+//   - "a: Arzttermin" -> 1h from now
+//   - "a: Außer Haus 2h" -> 2h from now
+//   - "out: Lunch 30m" -> 30 minutes from now
+func createOutOfOfficeEvent(input string, calendarID string) error {
 	// Remove prefix
-	input = strings.TrimPrefix(input, "focus:")
-	input = strings.TrimPrefix(input, "f:")
+	input = strings.TrimPrefix(input, "out:")
+	input = strings.TrimPrefix(input, "a:")
 	input = strings.TrimSpace(input)
 
 	// Parse duration at the end (e.g., "2h", "30m", "1.5h")
@@ -89,15 +89,15 @@ func createFocusTimeEvent(input string, calendarID string) error {
 	}
 
 	// Find the account that owns this calendar
-	// Focus Time events must be created on the primary calendar
+	// Out of Office events must be created on the primary calendar
 	for _, acc := range accounts {
 		// Try to find the calendar to get the account
 		for _, c := range acc.Calendars {
 			if c.ID == calendarID {
-				// Create Focus Time event starting now
+				// Create Out of Office event starting now
 				start := time.Now().Local()
-				log.Printf("[focustime] creating event: title=%q, start=%v, duration=%v", title, start, duration)
-				return acc.CreateFocusTime(title, start, duration)
+				log.Printf("[outofoffice] creating event: title=%q, start=%v, duration=%v", title, start, duration)
+				return acc.CreateOutOfOffice(title, start, duration)
 			}
 		}
 	}
