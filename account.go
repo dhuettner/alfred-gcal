@@ -275,6 +275,44 @@ func (a *Account) QuickAdd(calendarID string, quick string) error {
 	return err
 }
 
+// CreateFocusTime creates a new Focus Time event in the primary calendar.
+// Focus Time events can only be created on the primary calendar.
+func (a *Account) CreateFocusTime(title string, start time.Time, duration time.Duration) error {
+	var (
+		srv *calendar.Service
+		err error
+	)
+
+	if srv, err = a.Service(); err != nil {
+		return errors.Wrap(err, "create service")
+	}
+
+	end := start.Add(duration)
+
+	event := &calendar.Event{
+		Summary: title,
+		Start: &calendar.EventDateTime{
+			DateTime: start.Format(time.RFC3339),
+		},
+		End: &calendar.EventDateTime{
+			DateTime: end.Format(time.RFC3339),
+		},
+		EventType: "focusTime",
+		FocusTimeProperties: &calendar.EventFocusTimeProperties{
+			AutoDeclineMode: "declineOnlyNewConflictingInvitations",
+			DeclineMessage:  "I'm in focus time",
+			ChatStatus:      "doNotDisturb",
+		},
+	}
+
+	if _, err = srv.Events.Insert("primary", event).Do(); err != nil {
+		return errors.Wrap(err, "create focus time event error")
+	}
+
+	log.Printf("[account] created focus time event: %q from %v to %v", title, start, end)
+	return nil
+}
+
 // Check for OAuth2 error and  remove tokens if they've expired/been revoked.
 func (a *Account) handleAPIError(err error) error {
 	if err2, ok := err.(*url.Error); ok {
