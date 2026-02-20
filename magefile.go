@@ -33,7 +33,7 @@ func init() {
 		panic(err)
 	}
 	env = info.Env()
-	env["TAGS"] = "private"
+	// env["TAGS"] = "private"  // Disabled for development
 }
 
 func mod(args ...string) error {
